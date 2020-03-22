@@ -251,18 +251,16 @@ scene.beforeRender = () => {
 
     const increaseX = (Math.sin(angle) * speed + playerVector.x) * (engine.getDeltaTime() / 1000);
     const increaseZ = (Math.cos(angle) * speed + playerVector.z) * (engine.getDeltaTime() / 1000);
-    const blockAhead = map[Math.floor(x + increaseX * 2)]?.[Math.floor(y)]?.[Math.floor(z + increaseZ * 2)];
-    if (!blockAhead) {
+    const blockAheadLowerBody = map[Math.floor(x + increaseX * 2)]?.[Math.floor(y)]?.[Math.floor(z + increaseZ * 2)];
+    const blockAheadUpperBody = map[Math.floor(x + increaseX * 2)]?.[Math.floor(y + 1)]?.[Math.floor(z + increaseZ * 2)];
+    if (!blockAheadLowerBody && !blockAheadUpperBody) {
         playerBox.position.x += increaseX;
         playerBox.position.z += increaseZ;
-    } else {
-        playerBox.position.x -= increaseX;
-        playerBox.position.z -= increaseZ;
     }
 
     playerBox.position.y += playerVector.y * (engine.getDeltaTime() / 1000);
 
-    const blockBelow = map[Math.floor(x + 0.5)]?.[Math.floor(y - 1)]?.[Math.floor(z + 0.5)];
+    const blockBelow = map[Math.floor(x + 0.5)]?.[Math.floor(y - 0.1)]?.[Math.floor(z + 0.5)];
     if ((blockBelow) && (y - Math.floor(y) < 0.2) && (playerVector.y < 0)) {
         playerBox.position.y = Math.floor(y) + 0.5;
         playerVector.y = 0;
