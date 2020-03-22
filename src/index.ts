@@ -225,8 +225,10 @@ vertexData.normals = normals;
 vertexData.applyToMesh(customMesh);
 
 const playerVector = new Vector3(0, 0, 0);
-let playerMoveForward = 0; // -1 backwards, 1 forward
-let playerMoveSideways = 0; // -1 left, 1 right
+let playerMoveLeft = false;
+let playerMoveRight = false;
+let playerMoveForwards = false;
+let playerMoveBackwards = false;
 
 scene.beforeRender = () => {
     let { x, y, z } = playerBox.position;
@@ -237,22 +239,22 @@ scene.beforeRender = () => {
     let angle = 0;
     let speed = 0;
 
-    if (playerMoveSideways !== 0 || playerMoveForward !== 0) {
+    if (playerMoveLeft || playerMoveRight || playerMoveForwards || playerMoveBackwards) {
         speed = 2;
     }
 
-    if (playerMoveForward === 0 && playerMoveSideways !== 0) {
-        angle = camera.rotation.y + playerMoveSideways * Math.PI / 2;
-    } else if (playerMoveForward !== 0 && playerMoveSideways === 0) {
-        angle = camera.rotation.y + (playerMoveForward === -1 ? Math.PI : 0);
+    if (!(playerMoveForwards || playerMoveBackwards) && (playerMoveLeft || playerMoveRight)) {
+        angle = camera.rotation.y + (playerMoveLeft ? -1 : 1) * Math.PI / 2;
+    } else if ((playerMoveForwards || playerMoveBackwards) && !(playerMoveLeft || playerMoveRight)) {
+        angle = camera.rotation.y + (playerMoveForwards ? 0 : Math.PI);
     } else {
-        angle = camera.rotation.y * playerMoveForward + playerMoveSideways * Math.PI / 4;
+        angle = camera.rotation.y + (playerMoveForwards ? 0 : Math.PI) + (playerMoveLeft === playerMoveForwards ? -1 : 1) * Math.PI / 4;
     }
 
     const increaseX = (Math.sin(angle) * speed + playerVector.x) * (engine.getDeltaTime() / 1000);
     const increaseZ = (Math.cos(angle) * speed + playerVector.z) * (engine.getDeltaTime() / 1000);
-    const blockAheadLowerBody = map[Math.floor(x + increaseX * 2)]?.[Math.floor(y)]?.[Math.floor(z + increaseZ * 2)];
-    const blockAheadUpperBody = map[Math.floor(x + increaseX * 2)]?.[Math.floor(y + 1)]?.[Math.floor(z + increaseZ * 2)];
+    const blockAheadLowerBody = map[Math.floor(x + increaseX * 10)]?.[Math.floor(y)]?.[Math.floor(z + increaseZ * 10)];
+    const blockAheadUpperBody = map[Math.floor(x + increaseX * 10)]?.[Math.floor(y + 1)]?.[Math.floor(z + increaseZ * 10)];
     if (!blockAheadLowerBody && !blockAheadUpperBody) {
         playerBox.position.x += increaseX;
         playerBox.position.z += increaseZ;
@@ -301,16 +303,16 @@ document.addEventListener('keydown', (e) => {
             }
             break;
         case 'w':
-            playerMoveForward = 1;
+            playerMoveForwards = true;
             break;
         case 's':
-            playerMoveForward = -1;
+            playerMoveBackwards = true;
             break;
         case 'a':
-            playerMoveSideways = -1;
+            playerMoveLeft = true;
             break;
         case 'd':
-            playerMoveSideways = 1;
+            playerMoveRight = true;
             break;
     }
 });
@@ -330,12 +332,19 @@ document.addEventListener('keypress', (e) => {
 document.addEventListener('keyup', (e) => {
     e.preventDefault();
 
-    if (e.key === 'd' || e.key === 'a') {
-        playerMoveSideways = 0;
-    }
-
-    if (e.key === 'w' || e.key === 's') {
-        playerMoveForward = 0;
+    switch (e.key) {
+        case 'w':
+            playerMoveForwards = false;
+            break;
+        case 's':
+            playerMoveBackwards = false;
+            break;
+        case 'a':
+            playerMoveLeft = false;
+            break;
+        case 'd':
+            playerMoveRight = false;
+            break;
     }
 });
 
